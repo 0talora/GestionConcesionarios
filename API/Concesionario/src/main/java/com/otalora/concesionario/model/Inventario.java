@@ -69,7 +69,7 @@ public class Inventario {
 
     // Enum para estado
     public enum Estado {
-        Disponible, Reservado, En_revision, Vendido
+        Disponible, Reservado, Revisión, Vendido
     }
 
 }

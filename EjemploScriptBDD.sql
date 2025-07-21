@@ -1,4 +1,3 @@
-
 -- Tabla: modelo
 CREATE TABLE modelo (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -14,14 +13,14 @@ CREATE TABLE concesionario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     calle VARCHAR(100) NOT NULL,
-    numero VARCHAR(10) NOT NULL,
+    numero INT NOT NULL,
     ciudad VARCHAR(50) NOT NULL,
     provincia VARCHAR(50) NOT NULL,
-    cp VARCHAR(10) NOT NULL,
-    telefono VARCHAR(15) NOT NULL
+    cp INT NOT NULL,
+    telefono INT NOT NULL
 );
 
--- Tabla: inventario
+-- Tabla: inventario con nuevas columnas precio_compra y precio_venta
 CREATE TABLE inventario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     modelo_id INT NOT NULL,
@@ -32,22 +31,25 @@ CREATE TABLE inventario (
     combustible ENUM('Gasolina','Diésel','Eléctrico','Híbrido','GNC','GLP','Hidrógeno') NOT NULL,
     cubicaje DECIMAL(3,1) NOT NULL,
     concesionario_id INT NOT NULL,
-    estado ENUM('Disponible','Reservado','En revisión','Vendido') NOT NULL,
+    estado ENUM('Disponible','Reservado','Revisión','Vendido') NOT NULL,
     duenos_previos INT NOT NULL,
     version VARCHAR(20),
     matricula VARCHAR(15) NOT NULL UNIQUE,
     pais_origen VARCHAR(50) NOT NULL,
+    precio_compra DECIMAL(10,2) NOT NULL DEFAULT 0,
+    precio_venta DECIMAL(10,2) NOT NULL DEFAULT 0,
     FOREIGN KEY (modelo_id) REFERENCES modelo(id),
     FOREIGN KEY (concesionario_id) REFERENCES concesionario(id)
 );
 
 -- Insertar concesionarios
 INSERT INTO concesionario (nombre, calle, numero, ciudad, provincia, cp, telefono) VALUES
-('Alfa Romeo Stellantis & You Dr. Esquerdo', 'Dr. Esquerdo', '62', 'Madrid', 'Madrid', '28007', '915851050'),
-('Más Automóviles - Alfa Romeo Leganés', 'Av. Carlos Sáinz', '2', 'Leganés', 'Madrid', '28914', '910000000'),
-('Audi Motor Pacífico', 'Luis Mitjans', '2', 'Madrid', 'Madrid', '28007', '916480251'),
-('Automóviles Argüelles', 'Galileo', '5', 'Madrid', 'Madrid', '28015', '914447888'),
-('Motor Pacífico Premium (Audi)', 'Independencia', '4', 'Madrid', 'Madrid', '28013', '914330330');
+('Alfa Romeo Stellantis & You - Madrid Esquerdo', 'Dr. Esquerdo', 62, 'Madrid', 'Madrid', 28007, 915851050),
+('Más Automóviles - Alfa Romeo Leganés (Madrid)', 'Av. Carlos Sáinz', 2, 'Leganés', 'Madrid', 28914, 910000000),
+('Audi Motor Pacífico - Madrid', 'Luis Mitjans', 2, 'Madrid', 'Madrid', 28007, 916480251),
+('Automóviles Argüelles - Madrid Centro', 'Galileo', 5, 'Madrid', 'Madrid', 28015, 914447888),
+('Motor Pacífico Premium (Audi) - Madrid Centro', 'Independencia', 4, 'Madrid', 'Madrid', 28013, 914330330);
+
 
 -- Insertar modelos
 INSERT INTO modelo (nombre, marca, puertas, anio_lanzamiento, anio_cese) VALUES
@@ -84,7 +86,7 @@ INSERT INTO modelo (nombre, marca, puertas, anio_lanzamiento, anio_cese) VALUES
 ('Peugeot 3008','Peugeot',5,2008,NULL),
 ('Peugeot 208','Peugeot',5,2012,NULL);
 
--- Procedimiento para insertar 100 coches aleatorios
+-- Procedimiento para insertar 100 coches aleatorios con precios
 DELIMITER //
 CREATE PROCEDURE poblar_inventario()
 BEGIN
@@ -101,14 +103,14 @@ BEGIN
       CHAR(FLOOR(65 + RAND()*26))
     );
 
-    -- Intentar insertar, reintenta si ya existe matrícula (colisión improbable pero cubierta)
     BEGIN
       DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
 
       INSERT INTO inventario (
         modelo_id, color, anio, kilometraje, caballos, combustible,
         cubicaje, concesionario_id, estado, duenos_previos,
-        version, matricula, pais_origen
+        version, matricula, pais_origen,
+        precio_compra, precio_venta
       )
       VALUES (
         FLOOR(1 + RAND()*31),
@@ -119,11 +121,13 @@ BEGIN
         ELT(FLOOR(1 + RAND()*7),'Gasolina','Diésel','Eléctrico','Híbrido','GNC','GLP','Hidrógeno'),
         ROUND(0.8 + RAND()*3.2,1),
         FLOOR(1 + RAND()*5),
-        ELT(FLOOR(1 + RAND()*4),'Disponible','Reservado','En revisión','Vendido'),
+        ELT(FLOOR(1 + RAND()*4),'Disponible','Reservado','Revisión','Vendido'),
         FLOOR(RAND()*5),
         ELT(FLOOR(1 + RAND()*5),'E30','F10','G20','W204',''),
         mat,
-        ELT(FLOOR(1 + RAND()*6),'España','Alemania','Italia','Francia','EEUU','Japón')
+        ELT(FLOOR(1 + RAND()*6),'España','Alemania','Italia','Francia','EEUU','Japón'),
+        ROUND(5000 + RAND()*35000, 2),
+        ROUND(6000 + RAND()*45000, 2)
       );
 
       SET i = i + 1;
@@ -132,5 +136,5 @@ BEGIN
 END //
 DELIMITER ;
 
--- Llamar al procedimiento
+-- Llamar al procedimiento para poblar inventario
 CALL poblar_inventario();
