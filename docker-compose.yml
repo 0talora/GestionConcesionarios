@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ConcesionarioBDD
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "contraseña de root"
+      MYSQL_DATABASE: Concesionario
+      MYSQL_USER: "nombre de usuario"
+      MYSQL_PASSWORD: "contraseña de usuario"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
