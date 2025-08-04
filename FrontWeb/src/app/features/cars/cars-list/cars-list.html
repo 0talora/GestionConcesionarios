@@ -1,0 +1,12 @@
+<div *ngIf="cargando">Cargando inventario...</div>
+<div *ngIf="error">{{ error }}</div>
+
+<ul *ngIf="!cargando && !error">
+  <li *ngFor="let coche of inventario">
+    <strong>Matricula:</strong> {{ coche.matricula }} |
+    <strong>Modelo ID:</strong> {{ coche.modelo_id }} |
+    <strong>Año:</strong> {{ coche.anio }} |
+    <strong>Color:</strong> {{ coche.color }} |
+    <strong>Precio Venta:</strong> {{ coche.precio_venta | currency }}
+  </li>
+</ul>
